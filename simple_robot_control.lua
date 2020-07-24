@@ -1,4 +1,3 @@
-
 function sysCall_init()
    -- The child script initialization
    -- sim.addStatusbarMessage('sysCall_init')
