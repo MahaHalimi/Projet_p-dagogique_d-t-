@@ -1,6 +1,5 @@
 function sysCall_init()
    -- The child script initialization
-   -- sim.addStatusbarMessage('sysCall_init')
    objectName="Chassis"
    objectHandle=sim.getObjectHandle(objectName)
    -- get left and right motors handles
@@ -8,7 +7,7 @@ function sysCall_init()
    MoteurArriereDroit = sim.getObjectHandle("MoteurArriereDroit")
    MoteurAvantGauche = sim.getObjectHandle("MoteurAvantGauche")
    MoteurAvantDroit = sim.getObjectHandle("MoteurAvantDroit")
-   rosInterfacePresent=simROS
+   rosInterfacePresent = simROS
    -- Prepare the publishers and subscribers :
    if rosInterfacePresent then
       publisher1=simROS.advertise('/simulationTime','std_msgs/Float32')
@@ -16,6 +15,28 @@ function sysCall_init()
       subscriber1=simROS.subscribe('/cmd_vel','geometry_msgs/Twist','subscriber_cmd_vel_callback')
    end
 end
+
+function sysCall_cleanup()
+    -- Following not really needed in a simulation script (i.e. automatically shut down at simulation end):
+    if rosInterfacePresent then
+        simROS.shutdownPublisher(publisher1)
+        simROS.shutdownPublisher(publisher2)
+        simROS.shutdownSubscriber(subscriber1)
+    end
+end
+
+function sysCall_actuation()
+   -- Send an updated simulation time message, and send the transform of the object attached to this script:
+   if rosInterfacePresent then
+      -- publish time and pose topics
+      simROS.publish(publisher1,{data=sim.getSimulationTime()})
+      simROS.publish(publisher2,getPose("Chassis"))
+      -- send a TF
+      simROS.sendTransform(getTransformStamped(objectHandle,objectName,-1,'world'))
+      -- To send several transforms at once, use simROS.sendTransforms instead
+   end
+end
+
 function subscriber_cmd_vel_callback(msg)
    -- This is the subscriber callback function when receiving /cmd_vel  topic
    -- The msg is a Lua table defining linear and angular velocities
@@ -66,26 +87,5 @@ function getTransformStamped(objHandle,name,relTo,relToName)
 	 rotation={x=o[1],y=o[2],z=o[3],w=o[4]}
       }
    }
-end
+end 
  
- 
-function sysCall_actuation()
-   -- Send an updated simulation time message, and send the transform of the object attached to this script:
-   if rosInterfacePresent then
-      -- publish time and pose topics
-      simROS.publish(publisher1,{data=sim.getSimulationTime()})
-      simROS.publish(publisher2,getPose("Chassis"))
-      -- send a TF
-      simROS.sendTransform(getTransformStamped(objectHandle,objectName,-1,'world'))
-      -- To send several transforms at once, use simROS.sendTransforms instead
-   end
-end
- 
-function sysCall_cleanup()
-    -- Following not really needed in a simulation script (i.e. automatically shut down at simulation end):
-    if rosInterfacePresent then
-        simROS.shutdownPublisher(publisher1)
-        simROS.shutdownPublisher(publisher2)
-        simROS.shutdownSubscriber(subscriber1)
-    end
-end
