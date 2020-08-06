@@ -1,5 +1,6 @@
 function sysCall_init()
    -- The child script initialization
+   -- sim.addStatusbarMessage('sysCall_init')
    objectName="Chassis"
    objectHandle=sim.getObjectHandle(objectName)
    -- get left and right motors handles
@@ -7,7 +8,7 @@ function sysCall_init()
    MoteurArriereDroit = sim.getObjectHandle("MoteurArriereDroit")
    MoteurAvantGauche = sim.getObjectHandle("MoteurAvantGauche")
    MoteurAvantDroit = sim.getObjectHandle("MoteurAvantDroit")
-   rosInterfacePresent = simROS
+   rosInterfacePresent=simROS
    -- Prepare the publishers and subscribers :
    if rosInterfacePresent then
       publisher1=simROS.advertise('/simulationTime','std_msgs/Float32')
@@ -16,14 +17,6 @@ function sysCall_init()
    end
 end
 
-function sysCall_cleanup()
-    -- Following not really needed in a simulation script (i.e. automatically shut down at simulation end):
-    if rosInterfacePresent then
-        simROS.shutdownPublisher(publisher1)
-        simROS.shutdownPublisher(publisher2)
-        simROS.shutdownSubscriber(subscriber1)
-    end
-end
 
 function sysCall_actuation()
    -- Send an updated simulation time message, and send the transform of the object attached to this script:
@@ -36,27 +29,33 @@ function sysCall_actuation()
       -- To send several transforms at once, use simROS.sendTransforms instead
    end
 end
-
+ 
+function sysCall_cleanup()
+    -- Following not really needed in a simulation script (i.e. automatically shut down at simulation end):
+    if rosInterfacePresent then
+        simROS.shutdownPublisher(publisher1)
+        simROS.shutdownPublisher(publisher2)
+        simROS.shutdownSubscriber(subscriber1)
+    end
+end
+ 
 function subscriber_cmd_vel_callback(msg)
-   -- This is the subscriber callback function when receiving /cmd_vel  topic
-   -- The msg is a Lua table defining linear and angular velocities
-   --   linear velocity along x = msg["linear"]["x"]
-   --   linear velocity along y = msg["linear"]["y"]
-   --   linear velocity along z = msg["linear"]["z"]
-   --   angular velocity along x = msg["angular"]["x"]
-   --   angular velocity along y = msg["angular"]["y"]
-   --   angular velocity along z = msg["angular"]["z"]
    spdLin = msg["linear"]["x"]
    spdAng = msg["angular"]["z"]
    kLin = -0.5
    kAng = -0.2
-   spdLeft = kLin*spdLin+kAng*spdAng
-   spdRight = kLin*spdLin-kAng*spdAng
-   sim.setJointTargetVelocity(MoteurArriereGauche,spdLeft)
-   sim.setJointTargetVelocity(MoteurAvantGauche,spdLeft)
-   sim.setJointTargetVelocity(MoteurArriereDroit,spdRight) 
-   sim.setJointTargetVelocity(MoteurAvantDroit,spdRight) 
-   sim.addStatusbarMessage('cmd_vel subscriber receiver : spdLin ='..spdLin..',spdAng='..spdAng.." command : spdLeft="..spdLeft..",act="..spdRight)
+   spdRoue = kLin*spdLin
+   spdAngle = kAng*spdAng
+   spdGauche = (spdRoue - spdAngle)
+   spdDroite = (spdRoue + spdAngle)
+   --sim.addStatusbarMessage('vitesseroue'..spdRoue)
+   --sim.addStatusbarMessage('vitesseangle'..spdAngle)
+   --sim.addStatusbarMessage('vitessegauche'..spdGauche)
+   --sim.addStatusbarMessage('vitessedroite'..spdDroite)
+   sim.setJointTargetVelocity(MoteurArriereGauche,spdGauche)
+   sim.setJointTargetVelocity(MoteurAvantGauche,spdGauche)
+   sim.setJointTargetVelocity(MoteurArriereDroit,spdDroite) 
+   sim.setJointTargetVelocity(MoteurAvantDroit,spdDroite) 
 end
  
 function getPose(objectName)
@@ -87,5 +86,37 @@ function getTransformStamped(objHandle,name,relTo,relToName)
 	 rotation={x=o[1],y=o[2],z=o[3],w=o[4]}
       }
    }
-end 
- 
+end
+
+
+function sysCall_dynCallback(inData)
+  -- This function simulate the behavior of the robot in the water
+   objectName="Chassis"
+   warthog=sim.getObjectHandle(objectName)
+   Vit, W =sim.getObjectVelocity(warthog,-1)
+   -- sim.handleDynamics(0.1)
+   p=sim.getObjectPosition(warthog,-1)
+   -- if x> 25
+   x=p[1]
+   y=p[2]
+   z=p[3]
+   po = 100000
+   g= 9.8
+   l = 1
+   -- m=5
+   m=sim.getShapeMassAndInertia(warthog)
+   Cx = 1.05
+   -- print("in water")
+   -- print("profondeur est de ", z)
+   F =  { 1/2*(po*Vit[1]*math.abs(Vit[1])*l*l*Cx/m), 1/2*(po*Vit[2]*math.abs(Vit[2])*l*l*Cx/m),-(po*g*l*l*math.min(0, (math.max(math.min(z,0),-l)))/m) - 1/2*(po*Vit[3]*math.abs(Vit[3])*l*l*Cx/m)  }
+   print(F)
+      -- F  = {0,0,0} 
+      -- + 1/2*(p*Vit[3]*math.abs(Vit[3])*l*l*Cx/m)
+   sim.addForce(warthog,{0,0,0},F)
+-- sim.resetDynamicObject(warthog)
+    if x > 25 then 
+       F = {0,0, -(po*g*l*l*max(0, (l+min(z,0)+z)/m)) }
+       sim.addForce(objectHandle, p, F)
+    end
+end
+
