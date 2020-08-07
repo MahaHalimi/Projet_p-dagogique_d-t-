@@ -88,35 +88,3 @@ function getTransformStamped(objHandle,name,relTo,relToName)
    }
 end
 
-
-function sysCall_dynCallback(inData)
-  -- This function simulate the behavior of the robot in the water
-   objectName="Chassis"
-   warthog=sim.getObjectHandle(objectName)
-   Vit, W =sim.getObjectVelocity(warthog,-1)
-   -- sim.handleDynamics(0.1)
-   p=sim.getObjectPosition(warthog,-1)
-   -- if x> 25
-   x=p[1]
-   y=p[2]
-   z=p[3]
-   po = 100000
-   g= 9.8
-   l = 1
-   -- m=5
-   m=sim.getShapeMassAndInertia(warthog)
-   Cx = 1.05
-   -- print("in water")
-   -- print("profondeur est de ", z)
-   F =  { 1/2*(po*Vit[1]*math.abs(Vit[1])*l*l*Cx/m), 1/2*(po*Vit[2]*math.abs(Vit[2])*l*l*Cx/m),-(po*g*l*l*math.min(0, (math.max(math.min(z,0),-l)))/m) - 1/2*(po*Vit[3]*math.abs(Vit[3])*l*l*Cx/m)  }
-   print(F)
-      -- F  = {0,0,0} 
-      -- + 1/2*(p*Vit[3]*math.abs(Vit[3])*l*l*Cx/m)
-   sim.addForce(warthog,{0,0,0},F)
--- sim.resetDynamicObject(warthog)
-    if x > 25 then 
-       F = {0,0, -(po*g*l*l*max(0, (l+min(z,0)+z)/m)) }
-       sim.addForce(objectHandle, p, F)
-    end
-end
-
