@@ -1,7 +1,7 @@
 function sysCall_init() 
    -- The child script initialization
    -- sim.addStatusbarMessage('sysCall_init')
-   objectName="WP0"
+   objectName="chassis"
    objectHandle=sim.getObjectHandle(objectName)
    -- get the waypoints
    WP0 = sim.getObjectHandle("WP0")
@@ -20,6 +20,7 @@ function sysCall_actuation()
    if rosInterfacePresent then
       -- publish time and pose topics
       simROS.publish(publisher1,{data=sim.getSimulationTime()})
+      simROS.publish(publisher2,{data=sim.getcmd_vel()})
       -- send a TF
       simROS.sendTransform(getTransformStamped(objectHandle,objectName,-1,'world'))
       -- To send several transforms at once, use simROS.sendTransforms instead
@@ -36,10 +37,9 @@ function sysCall_cleanup()
 end
  
 function subscriber_pose_callback(msg)
---
---
---
--- 
+   linear = msg["linear"]["x"]
+   angular = msg["angular"]["z"]
+   sim.addStatusbarMessage('pose subscriber receiver : linear ='..linear..',angular ='..angular..')
 end
 
 function getPose(objectName)
@@ -56,7 +56,7 @@ end
  
 function giveOrders(objectName)
 
-   objectHandle=sim.getObjectHandle(objectName)
+   objectHandle=sim.getObjectHandle(WP0)
    relTo = -1
    p=sim.getObjectPosition(objectHandle,relTo)
    return {
