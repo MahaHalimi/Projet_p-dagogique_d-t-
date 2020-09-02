@@ -208,5 +208,8 @@ include_directories(
 add_executable(pub src/pub.cpp)
 target_link_libraries(pub ${catkin_LIBRARIES})
 
+add_executable(sub src/sub.cpp)
+target_link_libraries(sub ${catkin_LIBRARIES})
+
 
 
