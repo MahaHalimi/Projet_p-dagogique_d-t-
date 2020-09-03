@@ -10,13 +10,12 @@ void chatterCallback(const geometry_msgs::Pose::ConstPtr &msg) {
 
 void print() {
     //ROS_INFO("Crrent state : (%f, %f, %f)", pose.position.x, pose.position.y, pose.position.z);
-    ROS_INFO("I heard: [%f]",pose.position.x);
+    ROS_INFO("I heard: [%f],[%f],[%f]",pose.position.x,pose.position.y, pose.orientation.z);
 }
 
 int main(int argc, char **argv) {
     ros::init(argc, argv,"sub");
     ros::NodeHandle n;
-    //ros::Subscriber sub = n.subscribe<geometry_msgs::Pose>("/vrep_ros_interface/pose", 1, &chatterCallback);
     ros::Subscriber sub = n.subscribe("pose", 100, chatterCallback);
 
 ros::Rate loop_rate(100);
