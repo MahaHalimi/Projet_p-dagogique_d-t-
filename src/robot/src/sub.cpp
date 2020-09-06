@@ -9,7 +9,6 @@ void chatterCallback(const geometry_msgs::Pose::ConstPtr &msg) {
 }
 
 void print() {
-    //ROS_INFO("Crrent state : (%f, %f, %f)", pose.position.x, pose.position.y, pose.position.z);
     ROS_INFO("I heard: [%f],[%f],[%f]",pose.position.x,pose.position.y, pose.orientation.z);
 }
 

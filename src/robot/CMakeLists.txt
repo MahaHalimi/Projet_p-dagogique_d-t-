@@ -8,9 +8,13 @@ project(robot)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
+  actionlib_msgs
+  message_generation
   std_msgs
+  geometry_msgs
+  nav_msgs
+  roscpp
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -61,12 +65,12 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
-
+add_action_files(
+  DIRECTORY
+  action
+  FILES
+  act.action
+)
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
@@ -205,7 +209,7 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(pub src/pub.cpp)
+add_executable(go_to_goal src/go_to_goal.cpp)
 target_link_libraries(pub ${catkin_LIBRARIES})
 
 add_executable(sub src/sub.cpp)

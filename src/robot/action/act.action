@@ -1,0 +1,14 @@
+#goal         
+geometry_msgs::Point point;
+---
+#result
+float x
+float y
+float distance
+float status
+---
+#feedback
+float x
+float y
+float distance
+float status
