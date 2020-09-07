@@ -40,9 +40,9 @@ angleToGoal = atan2(y, x); // angle
 //ROS_INFO("Current angle: %f, Angle to goal: %f", current_theta* 180 / M_PI, angleToGoal* 180 / M_PI);
 ROS_INFO("distance: %f", distance);
 //ROS_INFO("abs(angleToGoal - current_theta) : %f", abs(angleToGoal - current_theta) );
+ROS_INFO("current_theta: %f", current_theta);
 
 msg.angular.z = -2.5;
-//ROS_INFO("current_theta: %f", current_theta);
 
 if (current_theta < 2.250239) 
       {
@@ -50,28 +50,27 @@ if (current_theta < 2.250239)
         msg.angular.z = 0.0;
         msg.linear.x = 1.0;
       } 
-while (distance < 0.394215)
+if (distance < 0.394215)
        { 
+        //ROS_INFO("WP is reach");
         msg.linear.x = 0.0;
-       }       
+        msg.angular.z = -1.5;
+       } 
+if (current_theta < 0.254357)
+       { 
+        ROS_INFO(" WP is reach");
+       msg.angular.z = 0.0;
+       msg.linear.x = 1.0;
+       }  
+
+ /*if (current_theta < 0.254357 && distance < 8.523496)
+       { 
+        //ROS_INFO("WP is reache");
+        msg.linear.x = 0.0;
+        msg.angular.z = 1.5;
+       } */
+
           
-
-/*
-if (distance < 0.05) // if goal is reach
-      {
-        msg.linear.x = 0.0;
-
-      } else {
-        if (distance <0.394215) // if angle isn't lined up
-        {
-          msg.linear.x = 0.0;
-        }
-        // once it is lined up, it will go straight the next time it loop
-        else {
-          msg.angular.z = 0.0;
-          msg.linear.x = 2.1; // linear speed              
-        }
-      }*/
 chatter_pub.publish(msg);
 
 ros::spinOnce();

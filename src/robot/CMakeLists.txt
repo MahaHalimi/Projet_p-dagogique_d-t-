@@ -210,7 +210,7 @@ include_directories(
 # catkin_add_nosetests(test)
 
 add_executable(go_to_goal src/go_to_goal.cpp)
-target_link_libraries(pub ${catkin_LIBRARIES})
+target_link_libraries(go_to_goal ${catkin_LIBRARIES})
 
 add_executable(sub src/sub.cpp)
 target_link_libraries(sub ${catkin_LIBRARIES})
